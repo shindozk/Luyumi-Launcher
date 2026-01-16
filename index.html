@@ -209,6 +209,88 @@
         .animate-spin {
             animation: spin 1s linear infinite;
         }
+
+        .custom-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .custom-checkbox:checked {
+            background: rgba(147, 51, 234, 0.6);
+            border-color: rgba(147, 51, 234, 0.8);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+        }
+
+        .custom-checkbox:hover {
+            border-color: rgba(147, 51, 234, 0.6);
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
+        }
+
+        .custom-options {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+            margin-top: 0;
+        }
+
+        .custom-options.show {
+            max-height: 200px;
+            opacity: 1;
+            margin-top: 1rem;
+        }
+
+        .browse-btn {
+            background: rgba(147, 51, 234, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .browse-btn:hover {
+            background: rgba(147, 51, 234, 0.5);
+            border-color: rgba(147, 51, 234, 0.7);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.4);
+        }
+
+        .uninstall-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .uninstall-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+            border-color: rgba(239, 68, 68, 0.7);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="bg-image relative">
@@ -233,8 +315,8 @@
 
     <div class="w-[1280px] h-[720px] relative pt-8 z-10">
         <div class="h-full flex flex-col">
-            <div class="flex-1 flex items-center justify-center relative">
-                <div class="flex flex-col items-center gap-8">
+            <div class="flex-1 flex items-center justify-center relative overflow-y-auto no-scrollbar" style="max-height: calc(100% - 180px);">
+                <div class="flex flex-col items-center gap-3 py-2">
                     <div class="text-center">
                         <h1 class="text-7xl font-bold neon-glow text-purple-500 mb-2 tracking-tight">
                             HYTALE
@@ -256,15 +338,49 @@
                     </div>
 
                     <div class="w-[28rem]">
-                        <label class="block font-mono text-xs text-gray-400 mb-2 uppercase tracking-wider">
-                            Java Path (optional)
+                        <label class="flex items-center justify-center gap-3 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                id="customInstallCheck" 
+                                class="custom-checkbox"
+                            >
+                            <span class="font-mono text-sm text-gray-300 uppercase tracking-wider">Custom Installation</span>
                         </label>
-                        <input 
-                            type="text" 
-                            id="javaPath" 
-                            class="input-field w-full rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none"
-                            placeholder="/Library/Java/JavaVirtualMachines/.../bin/java"
-                        >
+
+                        <div id="customOptions" class="custom-options">
+                            <div class="mb-4">
+                                <label class="block font-mono text-xs text-gray-400 mb-2 uppercase tracking-wider">
+                                    Installation Folder
+                                </label>
+                                <div class="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        id="installPath" 
+                                        class="input-field flex-1 rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none"
+                                        placeholder="Default: AppData/Local/HytaleF2P"
+                                        readonly
+                                    >
+                                    <button 
+                                        onclick="browseInstallPath()"
+                                        class="browse-btn px-4 py-3 rounded-lg text-white font-mono text-sm"
+                                    >
+                                        <i class="fas fa-folder-open"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-mono text-xs text-gray-400 mb-2 uppercase tracking-wider">
+                                    Java Path (optional)
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="javaPath" 
+                                    class="input-field w-full rounded-lg px-4 py-3 text-white font-mono text-sm focus:outline-none"
+                                    placeholder="/Library/Java/JavaVirtualMachines/.../bin/java"
+                                >
+                            </div>
+                        </div>
                     </div>
 
                     <button 
@@ -272,7 +388,17 @@
                         onclick="launch()"
                         class="play-button w-64 h-16 rounded-2xl text-white font-bold text-2xl flex items-center justify-center transition-all transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none relative"
                     >
-                        <span id="playText" class="relative z-10 font-mono tracking-wider">PLAY</span>
+                        <span id="playText" class="relative z-10 font-mono tracking-wider">INSTALL</span>
+                    </button>
+
+                    <button 
+                        id="uninstallBtn"
+                        onclick="uninstallGame()"
+                        class="uninstall-btn w-64 h-12 rounded-xl text-white font-bold text-sm flex items-center justify-center transition-all transform disabled:opacity-50 disabled:cursor-not-allowed"
+                        style="display: none;"
+                    >
+                        <i class="fas fa-trash-alt mr-2"></i>
+                        <span class="font-mono tracking-wider">UNINSTALL</span>
                     </button>
                 </div>
             </div>
@@ -320,8 +446,12 @@
 
         const playBtn = document.getElementById('playBtn');
         const playText = document.getElementById('playText');
+        const uninstallBtn = document.getElementById('uninstallBtn');
         const playerNameInput = document.getElementById('playerName');
         const javaPathInput = document.getElementById('javaPath');
+        const installPathInput = document.getElementById('installPath');
+        const customInstallCheck = document.getElementById('customInstallCheck');
+        const customOptions = document.getElementById('customOptions');
         const progressText = document.getElementById('progressText');
         const progressPercent = document.getElementById('progressPercent');
         const progressSpeed = document.getElementById('progressSpeed');
@@ -329,21 +459,58 @@
         const progressBar = document.getElementById('progressBar');
         const loadingScreen = document.getElementById('loadingScreen');
 
+        customInstallCheck.addEventListener('change', () => {
+            if (customInstallCheck.checked) {
+                customOptions.classList.add('show');
+            } else {
+                customOptions.classList.remove('show');
+            }
+        });
+
+        async function browseInstallPath() {
+            const result = await window.electronAPI.selectInstallPath();
+            if (result) {
+                installPathInput.value = result;
+                await window.electronAPI.saveInstallPath(result);
+            }
+        }
+
         async function init() {
             try {
-                const [savedUsername, javaPath] = await Promise.all([
+                const [savedUsername, javaPath, installPath, gameInstalled] = await Promise.all([
                     window.electronAPI.loadUsername(),
-                    window.electronAPI.loadJavaPath()
+                    window.electronAPI.loadJavaPath(),
+                    window.electronAPI.loadInstallPath(),
+                    window.electronAPI.isGameInstalled()
                 ]);
                 if (savedUsername) {
                     playerNameInput.value = savedUsername;
                     username = savedUsername;
                 }
-                if (typeof javaPath === 'string') {
+                if (typeof javaPath === 'string' && javaPath) {
                     javaPathInput.value = javaPath;
+                    customInstallCheck.checked = true;
+                    customOptions.classList.add('show');
+                }
+                if (typeof installPath === 'string' && installPath) {
+                    installPathInput.value = installPath;
+                    customInstallCheck.checked = true;
+                    customOptions.classList.add('show');
+                }
+                
+                if (gameInstalled) {
+                    const customInstallContainer = document.querySelector('.w-\\[28rem\\]');
+                    if (customInstallContainer) {
+                        customInstallContainer.style.display = 'none';
+                    }
+                    playText.textContent = 'PLAY';
+                    uninstallBtn.style.display = 'flex';
+                } else {
+                    playText.textContent = 'INSTALL';
+                    uninstallBtn.style.display = 'none';
                 }
             } catch (error) {
-                console.error('Failed to load username:', error);
+                console.error('Failed to load settings:', error);
             } finally {
                 setTimeout(() => {
                     loadingScreen.style.opacity = '0';
@@ -400,6 +567,7 @@
         async function launch() {
             const playerName = playerNameInput.value.trim() || 'Player';
             const javaPath = javaPathInput.value.trim();
+            const installPath = installPathInput.value.trim();
             
             await window.electronAPI.saveUsername(playerName);
             
@@ -410,7 +578,7 @@
             playText.textContent = 'PROCESSING...';
 
             try {
-                const result = await window.electronAPI.launchGame(playerName, javaPath);
+                const result = await window.electronAPI.launchGame(playerName, javaPath, installPath);
                 
                 if (result.success) {
                     progressText.textContent = 'Game started!';
@@ -437,6 +605,35 @@
 
         function minimizeWindow() {
             window.electronAPI.minimizeWindow();
+        }
+
+        async function uninstallGame() {
+            if (!confirm('Are you sure you want to uninstall Hytale? All game files will be deleted.')) {
+                return;
+            }
+
+            uninstallBtn.disabled = true;
+            progressText.textContent = 'Uninstalling game...';
+
+            try {
+                const result = await window.electronAPI.uninstallGame();
+                
+                if (result.success) {
+                    progressText.textContent = 'Game uninstalled successfully!';
+                    playText.textContent = 'INSTALL';
+                    uninstallBtn.style.display = 'none';
+                    const customInstallContainer = document.querySelector('.w-\\[28rem\\]');
+                    if (customInstallContainer) {
+                        customInstallContainer.style.display = 'block';
+                    }
+                } else {
+                    progressText.textContent = `Uninstall failed: ${result.error}`;
+                }
+            } catch (error) {
+                progressText.textContent = `Uninstall failed: ${error.message}`;
+            } finally {
+                uninstallBtn.disabled = false;
+            }
         }
 
         playerNameInput.addEventListener('keypress', (e) => {
