@@ -12,18 +12,24 @@
     "build:mac": "electron-builder --mac",
     "build:all": "electron-builder --win --linux --mac"
   },
-  "keywords": ["hytale", "launcher"],
-  "author": "AMIAY",
+  "keywords": [
+    "hytale",
+    "launcher"
+  ],
+  "author": {
+    "name": "AMIAY",
+    "email": "support@amiay.dev"
+  },
   "license": "MIT",
   "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0"
   },
   "dependencies": {
-    "axios": "^1.6.0",
     "adm-zip": "^0.5.10",
-    "uuid": "^9.0.1",
-    "tar": "^7.0.0"
+    "axios": "^1.6.0",
+    "tar": "^7.0.0",
+    "uuid": "^9.0.1"
   },
   "build": {
     "appId": "com.hytalef2p.launcher",
@@ -42,11 +48,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "icon.ico"
@@ -55,11 +65,15 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.png",
@@ -69,11 +83,17 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "build/icon.icns",
