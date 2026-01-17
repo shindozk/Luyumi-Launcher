@@ -59,6 +59,7 @@ See [BUILD.md](BUILD.md) for detailed build instructions.
 
 - [@chasem-dev](https://github.com/chasem-dev)
 - [@crimera](https://github.com/crimera)
+- [@sanasol](https://github.com/sanasol)
 
 
 
