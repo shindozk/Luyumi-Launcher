@@ -284,7 +284,7 @@ async function installButler(toolsDir = TOOLS_DIR) {
   if (!fs.existsSync(toolsDir)) {
     fs.mkdirSync(toolsDir, { recursive: true });
   }
-  
+
   const butlerName = process.platform === 'win32' ? 'butler.exe' : 'butler';
   const butlerPath = path.join(toolsDir, butlerName);
   const zipPath = path.join(toolsDir, 'butler.zip');
@@ -349,7 +349,7 @@ async function downloadPWR(version = 'release', fileName = '1.pwr', progressCall
   const osName = getOS();
   const arch = getArch();
   const url = `https://game-patches.hytale.com/patches/${osName}/${arch}/${version}/0/${fileName}`;
-  
+
   const dest = path.join(cacheDir, fileName);
 
   if (fs.existsSync(dest)) {
@@ -360,7 +360,7 @@ async function downloadPWR(version = 'release', fileName = '1.pwr', progressCall
   console.log('Fetching PWR patch file:', url);
   await downloadFile(url, dest, progressCallback);
   console.log('PWR saved to:', dest);
-  
+
   return dest;
 }
 
@@ -368,9 +368,9 @@ async function applyPWR(pwrFile, progressCallback, gameDir = GAME_DIR, toolsDir 
   const butlerPath = await installButler(toolsDir);
   const gameLatest = gameDir;
   const stagingDir = path.join(gameLatest, 'staging-temp');
-  
+
   const clientPath = findClientPath(gameLatest);
-  
+
   if (clientPath) {
     console.log('Game files detected, skipping patch installation.');
     return;
@@ -388,11 +388,11 @@ async function applyPWR(pwrFile, progressCallback, gameDir = GAME_DIR, toolsDir 
   }
 
   console.log('Installing game patch...');
-  
+
   if (!fs.existsSync(butlerPath)) {
     throw new Error(`Butler tool not found at: ${butlerPath}`);
   }
-  
+
   if (!fs.existsSync(pwrFile)) {
     throw new Error(`PWR file not found at: ${pwrFile}`);
   }
@@ -404,7 +404,7 @@ async function applyPWR(pwrFile, progressCallback, gameDir = GAME_DIR, toolsDir 
     pwrFile,
     gameLatest
   ];
-  
+
   try {
     await new Promise((resolve, reject) => {
       const child = execFile(butlerPath, args, {
@@ -438,7 +438,7 @@ async function downloadJRE(progressCallback, cacheDir = CACHE_DIR, jreDir = JRE_
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
   }
-  
+
   const osName = getOS();
   const arch = getArch();
 
@@ -488,7 +488,7 @@ async function downloadJRE(progressCallback, cacheDir = CACHE_DIR, jreDir = JRE_
   const hashSum = crypto.createHash('sha256');
   hashSum.update(fileBuffer);
   const hex = hashSum.digest('hex');
-  
+
   if (hex !== platform.sha256) {
     fs.unlinkSync(cacheFile);
     throw new Error(`File validation failed: expected ${platform.sha256} but got ${hex}`);
@@ -544,7 +544,7 @@ function extractZip(zipPath, dest) {
 
   for (const entry of entries) {
     const entryPath = path.join(dest, entry.entryName);
-    
+
     const resolvedPath = path.resolve(entryPath);
     const resolvedDest = path.resolve(dest);
     if (!resolvedPath.startsWith(resolvedDest)) {
@@ -575,7 +575,7 @@ function extractTarGz(tarGzPath, dest) {
 function flattenJREDir(jreLatest) {
   try {
     const entries = fs.readdirSync(jreLatest, { withFileTypes: true });
-    
+
     if (entries.length !== 1 || !entries[0].isDirectory()) {
       return;
     }
@@ -655,7 +655,7 @@ function isGameInstalled() {
 
 async function uninstallGame() {
   const appDir = getResolvedAppDir();
-  
+
   if (!fs.existsSync(appDir)) {
     throw new Error('Game is not installed');
   }
@@ -663,7 +663,7 @@ async function uninstallGame() {
   try {
     fs.rmSync(appDir, { recursive: true, force: true });
     console.log('Game uninstalled successfully - removed entire HytaleF2P folder');
-    
+
     if (fs.existsSync(CONFIG_FILE)) {
       const config = loadConfig();
       delete config.installPath;
@@ -680,21 +680,21 @@ async function launchGame(playerName = 'Player', progressCallback, javaPathOverr
   const customToolsDir = path.join(customAppDir, 'butler');
   const customGameDir = path.join(customAppDir, 'release', 'package', 'game', 'latest');
   const customJreDir = path.join(customAppDir, 'release', 'package', 'jre', 'latest');
-  
+
   [customAppDir, customCacheDir, customToolsDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
   });
-  
+
   saveUsername(playerName);
   if (installPathOverride) {
     saveInstallPath(installPathOverride);
   }
 
   const configuredJava = (javaPathOverride !== undefined && javaPathOverride !== null
-    ? javaPathOverride
-    : loadJavaPath() || '').trim();
+      ? javaPathOverride
+      : loadJavaPath() || '').trim();
   let javaBin = null;
 
   if (configuredJava) {
@@ -737,6 +737,73 @@ async function launchGame(playerName = 'Player', progressCallback, javaPathOverr
     throw new Error(`Game client missing. Tried: ${attempted}`);
   }
 
+  // macOS: Remove quarantine and ad-hoc sign binaries to prevent SIGABRT crashes
+  if (process.platform === 'darwin') {
+    try {
+      const appBundle = path.join(gameLatest, 'Client', 'Hytale.app');
+      const serverDir = path.join(gameLatest, 'Server');
+
+      // Helper to remove quarantine and sign a path
+      const signPath = async (targetPath, deep = false) => {
+        await execAsync(`xattr -cr "${targetPath}"`).catch(() => {});
+        const deepFlag = deep ? '--deep ' : '';
+        await execAsync(`codesign --force ${deepFlag}--sign - "${targetPath}"`).catch(() => {});
+      };
+
+      // Sign app bundle or client binary
+      if (fs.existsSync(appBundle)) {
+        await signPath(appBundle, true);
+        console.log('Signed macOS app bundle');
+      } else {
+        await signPath(path.dirname(clientPath), true);
+        console.log('Signed macOS client binary');
+      }
+
+      // Sign Java runtime
+      if (javaBin && fs.existsSync(javaBin)) {
+        // Navigate from bin/java up to the JRE bundle root (contains Contents/)
+        let jreRoot = path.dirname(path.dirname(javaBin));
+        if (jreRoot.endsWith('Home')) {
+          jreRoot = path.dirname(path.dirname(jreRoot));
+        }
+        await signPath(jreRoot, true);
+        await signPath(javaBin, false);
+        console.log('Signed Java runtime');
+      }
+
+      // Sign server directory native libraries
+      if (fs.existsSync(serverDir)) {
+        await execAsync(`xattr -cr "${serverDir}"`).catch(() => {});
+        await execAsync(`find "${serverDir}" -type f -perm +111 -exec codesign --force --sign - {} \\;`).catch(() => {});
+        console.log('Signed server binaries');
+      }
+
+      // Create java wrapper script that adds --disable-sentry flag for server launches
+      if (javaBin && fs.existsSync(javaBin)) {
+        const javaWrapperPath = path.join(path.dirname(javaBin), 'java-wrapper');
+        const wrapperScript = `#!/bin/bash
+# Java wrapper for macOS - adds --disable-sentry to fix Sentry hang issue
+REAL_JAVA="${javaBin}"
+ARGS=("$@")
+for i in "\${!ARGS[@]}"; do
+  if [[ "\${ARGS[$i]}" == *"HytaleServer.jar"* ]]; then
+    ARGS=("\${ARGS[@]:0:$((i+1))}" "--disable-sentry" "\${ARGS[@]:$((i+1))}")
+    break
+  fi
+done
+exec "$REAL_JAVA" "\${ARGS[@]}"
+`;
+        fs.writeFileSync(javaWrapperPath, wrapperScript, { mode: 0o755 });
+        await signPath(javaWrapperPath, false);
+        console.log('Created java wrapper with --disable-sentry fix');
+        javaBin = javaWrapperPath;
+      }
+    } catch (signError) {
+      console.log('Notice: macOS signing step failed:', signError.message);
+      console.log('The game may still launch if Gatekeeper allows it');
+    }
+  }
+
   const uuid = getUuidForUser(playerName);
   const args = [
     '--app-dir', gameLatest,
@@ -751,7 +818,7 @@ async function launchGame(playerName = 'Player', progressCallback, javaPathOverr
   }
   console.log('Starting game...');
   console.log(`Command: "${clientPath}" ${args.join(' ')}`);
-  
+
   const child = exec(`"${clientPath}" ${args.map(a => `"${a}"`).join(' ')}`, {
     stdio: 'inherit',
     detached: true
