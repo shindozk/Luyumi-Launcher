@@ -40,6 +40,9 @@
     "tar": ">=7.5.3",
     "uuid": "^9.0.1"
   },
+  "overrides": {
+    "tar": "$tar"
+  },
   "build": {
     "appId": "com.hytalef2p.launcher",
     "productName": "Hytale F2P",
