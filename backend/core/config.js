@@ -14,6 +14,10 @@ function getAuthDomain() {
   }
   // Then check config file
   const config = loadConfig();
+  if (config.activeProfileId && config.profiles && config.profiles[config.activeProfileId]) {
+    // Allow profile to override auth domain if ever needed
+    // but for now stick to global or env
+  }
   if (config.authDomain) {
     return config.authDomain;
   }
@@ -111,6 +115,16 @@ function saveJavaPath(javaPath) {
 
 function loadJavaPath() {
   const config = loadConfig();
+
+  // Prefer Active Profile's Java Path
+  if (config.activeProfileId && config.profiles && config.profiles[config.activeProfileId]) {
+    const profile = config.profiles[config.activeProfileId];
+    if (profile.javaPath && profile.javaPath.trim().length > 0) {
+      return profile.javaPath;
+    }
+  }
+
+  // Fallback to global setting
   return config.javaPath || '';
 }
 
@@ -135,14 +149,29 @@ function loadDiscordRPC() {
 
 function saveModsToConfig(mods) {
   try {
-    let config = loadConfig();
-    config.installedMods = mods;
-    
+    const config = loadConfig();
+
+    // Config migration to profiles handles the structure, 
+    // but here we ensure that if we are saving mods, we save them to the ACTIVE profile
+    // OR we save to the global pool if that's the design.
+    // Based on the plan: Profile has "Enabled Mods". 
+    // This function seems to be used to save the list of *Installed* mods.
+
+    // We'll update the global config for "installedMods" mostly for reference/migration,
+    // but primarily we should be updating the active profile's mod list.
+
+    if (config.activeProfileId && config.profiles && config.profiles[config.activeProfileId]) {
+      config.profiles[config.activeProfileId].mods = mods;
+    } else {
+      // Fallback for legacy or no-profile state
+      config.installedMods = mods;
+    }
+
     const configDir = path.dirname(CONFIG_FILE);
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
     }
-    
+
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
     console.log('Mods saved to config.json');
   } catch (error) {
@@ -153,6 +182,12 @@ function saveModsToConfig(mods) {
 function loadModsFromConfig() {
   try {
     const config = loadConfig();
+
+    // Prefer Active Profile
+    if (config.activeProfileId && config.profiles && config.profiles[config.activeProfileId]) {
+      return config.profiles[config.activeProfileId].mods || [];
+    }
+
     return config.installedMods || [];
   } catch (error) {
     console.error('Error loading mods from config:', error);
@@ -162,19 +197,19 @@ function loadModsFromConfig() {
 
 function isFirstLaunch() {
   const config = loadConfig();
-  
+
   if ('hasLaunchedBefore' in config) {
     return !config.hasLaunchedBefore;
   }
-  
-  const hasUserData = config.installPath || config.username || config.javaPath || 
-                      config.chatUsername || config.userUuids || 
-                      Object.keys(config).length > 0;
-  
+
+  const hasUserData = config.installPath || config.username || config.javaPath ||
+    config.chatUsername || config.userUuids ||
+    Object.keys(config).length > 0;
+
   if (!hasUserData) {
     return true;
   }
-  
+
   return true;
 }
 
@@ -195,17 +230,17 @@ function getAllUuidMappings() {
 
 function setUuidForUser(username, uuid) {
   const { v4: uuidv4, validate: validateUuid } = require('uuid');
-  
+
   // Validate UUID format
   if (!validateUuid(uuid)) {
     throw new Error('Invalid UUID format');
   }
-  
+
   const config = loadConfig();
   const userUuids = config.userUuids || {};
   userUuids[username] = uuid;
   saveConfig({ userUuids });
-  
+
   return uuid;
 }
 
@@ -217,13 +252,13 @@ function generateNewUuid() {
 function deleteUuidForUser(username) {
   const config = loadConfig();
   const userUuids = config.userUuids || {};
-  
+
   if (userUuids[username]) {
     delete userUuids[username];
     saveConfig({ userUuids });
     return true;
   }
-  
+
   return false;
 }
 
@@ -231,7 +266,7 @@ function resetCurrentUserUuid() {
   const username = loadUsername();
   const { v4: uuidv4 } = require('uuid');
   const newUuid = uuidv4();
-  
+
   return setUuidForUser(username, newUuid);
 }
 

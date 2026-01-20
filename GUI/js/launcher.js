@@ -14,15 +14,15 @@ export function setupLauncher() {
   uninstallBtn = document.getElementById('uninstallBtn');
   playerNameInput = document.getElementById('playerName');
   javaPathInput = document.getElementById('javaPath');
-  
+
   if (playerNameInput) {
     playerNameInput.addEventListener('change', savePlayerName);
   }
-  
+
   if (javaPathInput) {
     javaPathInput.addEventListener('change', saveJavaPath);
   }
-  
+
   if (window.electronAPI && window.electronAPI.onProgressUpdate) {
     window.electronAPI.onProgressUpdate((data) => {
       if (!isDownloading) return;
@@ -31,43 +31,207 @@ export function setupLauncher() {
       }
     });
   }
+  if (window.electronAPI && window.electronAPI.onProgressUpdate) {
+    window.electronAPI.onProgressUpdate((data) => {
+      if (!isDownloading) return;
+      if (window.LauncherUI) {
+        window.LauncherUI.updateProgress(data);
+      }
+    });
+  }
+
+  // Initial Profile Load
+  loadProfiles();
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const selector = document.getElementById('profileSelector');
+    if (selector && !selector.contains(e.target)) {
+      const dropdown = document.getElementById('profileDropdown');
+      if (dropdown) dropdown.classList.remove('show');
+    }
+  });
 }
+
+// ==========================================
+// PROFILE MANAGEMENT
+// ==========================================
+
+async function loadProfiles() {
+  try {
+    if (!window.electronAPI || !window.electronAPI.profile) return;
+
+    const profiles = await window.electronAPI.profile.list();
+    const activeProfile = await window.electronAPI.profile.getActive();
+
+    renderProfileList(profiles, activeProfile);
+    updateCurrentProfileUI(activeProfile);
+  } catch (error) {
+    console.error('Failed to load profiles:', error);
+  }
+}
+
+function renderProfileList(profiles, activeProfile) {
+  const list = document.getElementById('profileList');
+  const managerList = document.getElementById('managerProfileList');
+
+  if (!list) return;
+
+  // Dropdown List
+  list.innerHTML = profiles.map(p => `
+        <div class="profile-item ${p.id === activeProfile.id ? 'active' : ''}" 
+             onclick="switchProfile('${p.id}')">
+            <span>${p.name}</span>
+            ${p.id === activeProfile.id ? '<i class="fas fa-check ml-auto"></i>' : ''}
+        </div>
+    `).join('');
+
+  // Manager Modal List
+  if (managerList) {
+    managerList.innerHTML = profiles.map(p => `
+            <div class="profile-manager-item ${p.id === activeProfile.id ? 'active' : ''}">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-user-circle text-xl text-gray-400"></i>
+                    <div>
+                        <div class="font-bold">${p.name}</div>
+                        <div class="text-xs text-gray-500">ID: ${p.id.substring(0, 8)}...</div>
+                    </div>
+                </div>
+                ${p.id !== activeProfile.id ? `
+                    <button class="profile-delete-btn" onclick="deleteProfile('${p.id}')" title="Delete Profile">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : '<span class="text-xs text-green-500 font-bold px-2">ACTIVE</span>'}
+            </div>
+        `).join('');
+  }
+}
+
+function updateCurrentProfileUI(profile) {
+  const nameEl = document.getElementById('currentProfileName');
+  if (nameEl && profile) {
+    nameEl.textContent = profile.name;
+  }
+}
+
+window.toggleProfileDropdown = () => {
+  const dropdown = document.getElementById('profileDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('show');
+  }
+};
+
+window.openProfileManager = () => {
+  const modal = document.getElementById('profileManagerModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    // Refresh list
+    loadProfiles();
+  }
+  // Close dropdown
+  const dropdown = document.getElementById('profileDropdown');
+  if (dropdown) dropdown.classList.remove('show');
+};
+
+window.closeProfileManager = () => {
+  const modal = document.getElementById('profileManagerModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.createNewProfile = async () => {
+  const input = document.getElementById('newProfileName');
+  if (!input || !input.value.trim()) return;
+
+  try {
+    const name = input.value.trim();
+    await window.electronAPI.profile.create(name);
+    input.value = '';
+    await loadProfiles();
+  } catch (error) {
+    console.error('Failed to create profile:', error);
+    alert('Failed to create profile: ' + error.message);
+  }
+};
+
+window.deleteProfile = async (id) => {
+  if (!confirm('Are you sure you want to delete this profile? parameters and mods configuration will be lost.')) return;
+
+  try {
+    await window.electronAPI.profile.delete(id);
+    await loadProfiles();
+  } catch (error) {
+    console.error('Failed to delete profile:', error);
+    alert('Failed to delete profile: ' + error.message);
+  }
+};
+
+window.switchProfile = async (id) => {
+  try {
+    if (window.LauncherUI) window.LauncherUI.showProgress();
+    if (window.LauncherUI) window.LauncherUI.updateProgress({ message: 'Switching Profile...' });
+
+    await window.electronAPI.profile.activate(id);
+
+    // Refresh UI
+    await loadProfiles();
+
+    // Refresh Mods
+    if (window.modsManager) {
+      if (window.modsManager.loadInstalledMods) await window.modsManager.loadInstalledMods();
+      if (window.modsManager.loadBrowseMods) await window.modsManager.loadBrowseMods();
+    }
+
+    // Close dropdown
+    const dropdown = document.getElementById('profileDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+
+    if (window.LauncherUI) {
+      window.LauncherUI.updateProgress({ message: 'Profile Switched!' });
+      setTimeout(() => window.LauncherUI.hideProgress(), 1000);
+    }
+
+  } catch (error) {
+    console.error('Failed to switch profile:', error);
+    alert('Failed to switch profile: ' + error.message);
+    if (window.LauncherUI) window.LauncherUI.hideProgress();
+  }
+};
 
 export async function launch() {
   if (isDownloading || (playBtn && playBtn.disabled)) return;
-  
+
   let playerName = 'Player';
   if (window.SettingsAPI && window.SettingsAPI.getCurrentPlayerName) {
     playerName = window.SettingsAPI.getCurrentPlayerName();
   } else if (playerNameInput && playerNameInput.value.trim()) {
     playerName = playerNameInput.value.trim();
   }
-  
+
   let javaPath = '';
   if (window.SettingsAPI && window.SettingsAPI.getCurrentJavaPath) {
     javaPath = window.SettingsAPI.getCurrentJavaPath();
   }
-  
+
   if (window.LauncherUI) window.LauncherUI.showProgress();
   isDownloading = true;
   if (playBtn) {
     playBtn.disabled = true;
     playText.textContent = 'LAUNCHING...';
   }
-  
+
   try {
     if (window.LauncherUI) window.LauncherUI.updateProgress({ message: 'Starting game...' });
-    
+
     if (window.electronAPI && window.electronAPI.launchGame) {
       const result = await window.electronAPI.launchGame(playerName, javaPath, '');
-      
+
       isDownloading = false;
-      
+
       if (window.LauncherUI) {
         window.LauncherUI.hideProgress();
       }
       resetPlayButton();
-      
+
       if (result.success) {
         if (window.electronAPI.minimizeWindow) {
           setTimeout(() => {
@@ -79,7 +243,7 @@ export async function launch() {
       }
     } else {
       isDownloading = false;
-      
+
       if (window.LauncherUI) {
         window.LauncherUI.hideProgress();
       }
@@ -87,7 +251,7 @@ export async function launch() {
     }
   } catch (error) {
     isDownloading = false;
-    
+
     if (window.LauncherUI) {
       window.LauncherUI.hideProgress();
     }
@@ -231,15 +395,15 @@ export async function uninstallGame() {
 }
 
 async function performUninstall() {
-  
+
   if (window.LauncherUI) window.LauncherUI.showProgress();
   if (window.LauncherUI) window.LauncherUI.updateProgress({ message: 'Uninstalling game...' });
   if (uninstallBtn) uninstallBtn.disabled = true;
-  
+
   try {
     if (window.electronAPI && window.electronAPI.uninstallGame) {
       const result = await window.electronAPI.uninstallGame();
-      
+
       if (result.success) {
         if (window.LauncherUI) {
           window.LauncherUI.updateProgress({ message: 'Game uninstalled successfully!' });
@@ -304,7 +468,7 @@ async function saveJavaPath() {
 
 function toggleCustomJava() {
   if (!customJavaOptions) return;
-  
+
   if (customJavaCheck && customJavaCheck.checked) {
     customJavaOptions.style.display = 'block';
   } else {

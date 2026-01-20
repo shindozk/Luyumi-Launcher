@@ -45,22 +45,32 @@ function handleNavigation() {
 function setupWindowControls() {
   const minimizeBtn = document.querySelector('.window-controls .minimize');
   const closeBtn = document.querySelector('.window-controls .close');
-  
+
   const windowControls = document.querySelector('.window-controls');
   const header = document.querySelector('.header');
-  
+
+  const profileSelector = document.querySelector('.profile-selector');
+
+  if (profileSelector) {
+    profileSelector.style.pointerEvents = 'auto';
+    profileSelector.style.zIndex = '10000';
+  }
+
   if (windowControls) {
     windowControls.style.pointerEvents = 'auto';
     windowControls.style.zIndex = '10000';
   }
-  
+
   if (header) {
     header.style.webkitAppRegion = 'drag';
     if (windowControls) {
       windowControls.style.webkitAppRegion = 'no-drag';
     }
+    if (profileSelector) {
+      profileSelector.style.webkitAppRegion = 'no-drag';
+    }
   }
-  
+
   if (window.electronAPI) {
     if (minimizeBtn) {
       minimizeBtn.onclick = (e) => {
@@ -82,7 +92,7 @@ function showLauncherOrInstall(isInstalled) {
   const install = document.getElementById('install-page');
   const sidebar = document.querySelector('.sidebar');
   const gameTitle = document.querySelector('.game-title-section');
-  
+
   if (isInstalled) {
     if (launcher) launcher.style.display = '';
     if (install) install.style.display = 'none';
@@ -137,14 +147,14 @@ function updateProgress(data) {
   if (data.message && progressText) {
     progressText.textContent = data.message;
   }
-  
+
   if (data.percent !== null && data.percent !== undefined) {
     const percent = Math.min(100, Math.max(0, Math.round(data.percent)));
     if (progressPercent) progressPercent.textContent = `${percent}%`;
     if (progressBarFill) progressBarFill.style.width = `${percent}%`;
     if (progressBar) progressBar.style.width = `${percent}%`;
   }
-  
+
   if (data.speed && data.downloaded && data.total) {
     const speedMB = (data.speed / 1024 / 1024).toFixed(2);
     const downloadedMB = (data.downloaded / 1024 / 1024).toFixed(2);
@@ -157,13 +167,13 @@ function updateProgress(data) {
 function setupAnimations() {
   document.body.style.opacity = '0';
   document.body.style.transform = 'translateY(20px)';
-  
+
   setTimeout(() => {
     document.body.style.transition = 'all 0.6s ease';
     document.body.style.opacity = '1';
     document.body.style.transform = 'translateY(0)';
   }, 100);
-  
+
   const style = document.createElement('style');
   style.textContent = `
     @keyframes fadeInUp {
@@ -182,7 +192,7 @@ function setupAnimations() {
 
 function setupFirstLaunchHandlers() {
   console.log('Setting up first launch handlers...');
-  
+
   window.electronAPI.onFirstLaunchUpdate((data) => {
     console.log('Received first launch update event:', data);
     showFirstLaunchUpdateDialog(data);
@@ -195,12 +205,12 @@ function setupFirstLaunchHandlers() {
     showProgress();
     updateProgress(data);
   });
-  
+
   let lockButtonTimeout = null;
-  
+
   window.electronAPI.onLockPlayButton((locked) => {
     lockPlayButton(locked);
-    
+
     if (locked) {
       if (lockButtonTimeout) {
         clearTimeout(lockButtonTimeout);
@@ -221,12 +231,12 @@ function setupFirstLaunchHandlers() {
 
 function showFirstLaunchUpdateDialog(data) {
   console.log('Creating first launch modal...');
-  
+
   const existingModal = document.querySelector('.first-launch-modal-overlay');
   if (existingModal) {
     existingModal.remove();
   }
-  
+
   const modalOverlay = document.createElement('div');
   modalOverlay.className = 'first-launch-modal-overlay';
   modalOverlay.style.cssText = `
@@ -243,7 +253,7 @@ function showFirstLaunchUpdateDialog(data) {
     justify-content: center !important;
     pointer-events: all !important;
   `;
-  
+
   const modalDialog = document.createElement('div');
   modalDialog.className = 'first-launch-modal-dialog';
   modalDialog.style.cssText = `
@@ -257,7 +267,7 @@ function showFirstLaunchUpdateDialog(data) {
     overflow: hidden !important;
     animation: modalSlideIn 0.3s ease-out !important;
   `;
-  
+
   modalDialog.innerHTML = `
     <div style="background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(59, 130, 246, 0.2)); padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1);">
       <h2 style="margin: 0; color: #fff; font-size: 1.5rem; font-weight: 600; text-align: center;">
@@ -306,9 +316,9 @@ function showFirstLaunchUpdateDialog(data) {
       </button>
     </div>
   `;
-  
+
   modalOverlay.appendChild(modalDialog);
-  
+
   modalOverlay.onclick = (e) => {
     if (e.target === modalOverlay) {
       e.preventDefault();
@@ -316,7 +326,7 @@ function showFirstLaunchUpdateDialog(data) {
       return false;
     }
   };
-  
+
   document.addEventListener('keydown', function preventEscape(e) {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -324,33 +334,33 @@ function showFirstLaunchUpdateDialog(data) {
       return false;
     }
   });
-  
+
   document.body.appendChild(modalOverlay);
-  
+
   const updateBtn = document.getElementById('updateGameBtn');
   updateBtn.onclick = () => {
     acceptFirstLaunchUpdate();
   };
-  
+
   window.firstLaunchExistingGame = data.existingGame;
-  
+
   console.log('First launch modal created and displayed');
 }
 
 function lockPlayButton(locked) {
   const playButton = document.getElementById('homePlayBtn');
-  
+
   if (!playButton) {
     console.warn('Play button not found');
     return;
   }
-  
+
   if (locked) {
     playButton.style.opacity = '0.5';
     playButton.style.pointerEvents = 'none';
     playButton.style.cursor = 'not-allowed';
     playButton.setAttribute('data-locked', 'true');
-    
+
     const spanElement = playButton.querySelector('span');
     if (spanElement) {
       if (!playButton.getAttribute('data-original-text')) {
@@ -358,21 +368,21 @@ function lockPlayButton(locked) {
       }
       spanElement.textContent = 'CHECKING...';
     }
-    
+
     console.log('Play button locked');
   } else {
     playButton.style.opacity = '';
     playButton.style.pointerEvents = '';
     playButton.style.cursor = '';
     playButton.removeAttribute('data-locked');
-    
+
     const spanElement = playButton.querySelector('span');
     const originalText = playButton.getAttribute('data-original-text');
     if (spanElement && originalText) {
       spanElement.textContent = originalText;
       playButton.removeAttribute('data-original-text');
     }
-    
+
     console.log('Play button unlocked');
   }
 }
@@ -381,12 +391,12 @@ function lockPlayButton(locked) {
 
 async function acceptFirstLaunchUpdate() {
   const existingGame = window.firstLaunchExistingGame;
-  
+
   if (!existingGame) {
     showNotification('Error: Game data not found', 'error');
     return;
   }
-  
+
   const modal = document.querySelector('.first-launch-modal-overlay');
   if (modal) {
     modal.style.pointerEvents = 'none';
@@ -397,21 +407,21 @@ async function acceptFirstLaunchUpdate() {
       btn.textContent = '🔄 Updating...';
     }
   }
-  
+
   try {
     showProgress();
     updateProgress({ message: 'Starting mandatory game update...', percent: 0 });
-    
+
     const result = await window.electronAPI.acceptFirstLaunchUpdate(existingGame);
-    
+
     window.electronAPI.markAsLaunched && window.electronAPI.markAsLaunched();
-    
+
     if (modal) {
       modal.remove();
     }
-    
+
     lockPlayButton(false);
-    
+
     if (result.success) {
       hideProgress();
       showNotification('Game updated successfully! 🎉', 'success');
@@ -434,7 +444,7 @@ function dismissFirstLaunchDialog() {
   if (modal) {
     modal.remove();
   }
-  
+
   lockPlayButton(false);
   window.electronAPI.markAsLaunched && window.electronAPI.markAsLaunched();
 }
@@ -443,13 +453,13 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
   notification.textContent = message;
-  
+
   document.body.appendChild(notification);
-  
+
   setTimeout(() => {
     notification.classList.add('show');
   }, 100);
-  
+
   setTimeout(() => {
     notification.remove();
   }, 5000);
@@ -463,9 +473,9 @@ function setupUI() {
   progressPercent = document.getElementById('progressPercent');
   progressSpeed = document.getElementById('progressSpeed');
   progressSize = document.getElementById('progressSize');
-  
+
   lockPlayButton(true);
-  
+
   setTimeout(() => {
     const playButton = document.getElementById('homePlayBtn');
     if (playButton && playButton.getAttribute('data-locked') === 'true') {
@@ -476,13 +486,13 @@ function setupUI() {
       }
     }
   }, 25000);
-  
+
   handleNavigation();
   setupWindowControls();
   setupSidebarLogo();
   setupAnimations();
   setupFirstLaunchHandlers();
-  
+
   document.body.focus();
 }
 

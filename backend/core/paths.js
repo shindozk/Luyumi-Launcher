@@ -77,32 +77,32 @@ function findClientPath(gameLatest) {
 
 function findUserDataPath(gameLatest) {
   const candidates = [];
-  
+
   candidates.push(path.join(gameLatest, 'Client', 'UserData'));
-  
+
   candidates.push(path.join(gameLatest, 'Client', 'Hytale.app', 'Contents', 'UserData'));
   candidates.push(path.join(gameLatest, 'Hytale.app', 'Contents', 'UserData'));
   candidates.push(path.join(gameLatest, 'UserData'));
-  
+
   candidates.push(path.join(gameLatest, 'Client', 'UserData'));
-  
+
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
       return candidate;
     }
   }
-  
+
   let defaultPath;
   if (process.platform === 'darwin') {
     defaultPath = path.join(gameLatest, 'Client', 'UserData');
   } else {
     defaultPath = path.join(gameLatest, 'Client', 'UserData');
   }
-  
+
   if (!fs.existsSync(defaultPath)) {
     fs.mkdirSync(defaultPath, { recursive: true });
   }
-  
+
   return defaultPath;
 }
 
@@ -110,15 +110,15 @@ function findUserDataRecursive(gameLatest) {
   function searchDirectory(dir) {
     try {
       const items = fs.readdirSync(dir, { withFileTypes: true });
-      
+
       for (const item of items) {
         if (item.isDirectory()) {
           const fullPath = path.join(dir, item.name);
-          
+
           if (item.name === 'UserData') {
             return fullPath;
           }
-          
+
           const found = searchDirectory(fullPath);
           if (found) {
             return found;
@@ -127,14 +127,14 @@ function findUserDataRecursive(gameLatest) {
       }
     } catch (error) {
     }
-    
+
     return null;
   }
-  
+
   if (!fs.existsSync(gameLatest)) {
     return null;
   }
-  
+
   const found = searchDirectory(gameLatest);
   return found;
 }
@@ -152,16 +152,14 @@ async function getModsPath(customInstallPath = null) {
     }
 
     if (!installPath) {
-      const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
-      installPath = path.join(localAppData, 'HytaleF2P');
-    } else {
-      installPath = path.join(installPath, 'HytaleF2P');
+      // Use the standard app directory logic which handles platforms correctly
+      installPath = getAppDir();
     }
 
     const gameLatest = path.join(installPath, 'release', 'package', 'game', 'latest');
-    
+
     const userDataPath = findUserDataPath(gameLatest);
-    
+
     const modsPath = path.join(userDataPath, 'Mods');
     const disabledModsPath = path.join(userDataPath, 'DisabledMods');
 

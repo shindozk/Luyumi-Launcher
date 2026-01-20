@@ -48,7 +48,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdatePopup: (callback) => {
     ipcRenderer.on('show-update-popup', (event, data) => callback(data));
   },
-  
+
   acceptFirstLaunchUpdate: (existingGame) => ipcRenderer.invoke('accept-first-launch-update', existingGame),
   markAsLaunched: () => ipcRenderer.invoke('mark-as-launched'),
   onFirstLaunchUpdate: (callback) => {
@@ -66,12 +66,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getLogDirectory: () => ipcRenderer.invoke('get-log-directory'),
   getRecentLogs: (maxLines) => ipcRenderer.invoke('get-recent-logs', maxLines),
-  
+
   // UUID Management methods
   getCurrentUuid: () => ipcRenderer.invoke('get-current-uuid'),
   getAllUuidMappings: () => ipcRenderer.invoke('get-all-uuid-mappings'),
   setUuidForUser: (username, uuid) => ipcRenderer.invoke('set-uuid-for-user', username, uuid),
   generateNewUuid: () => ipcRenderer.invoke('generate-new-uuid'),
   deleteUuidForUser: (username) => ipcRenderer.invoke('delete-uuid-for-user', username),
-  resetCurrentUserUuid: () => ipcRenderer.invoke('reset-current-user-uuid')
+  resetCurrentUserUuid: () => ipcRenderer.invoke('reset-current-user-uuid'),
+
+  // Profile API
+  profile: {
+    create: (name) => ipcRenderer.invoke('profile-create', name),
+    list: () => ipcRenderer.invoke('profile-list'),
+    getActive: () => ipcRenderer.invoke('profile-get-active'),
+    activate: (id) => ipcRenderer.invoke('profile-activate', id),
+    delete: (id) => ipcRenderer.invoke('profile-delete', id),
+    update: (id, updates) => ipcRenderer.invoke('profile-update', id, updates)
+  }
 });

@@ -11,6 +11,7 @@ const { saveUsername, saveInstallPath, loadJavaPath, getUuidForUser, getAuthServ
 const { resolveJavaPath, getJavaExec, getBundledJavaPath, detectSystemJava, JAVA_EXECUTABLE } = require('./javaManager');
 const { getInstalledClientVersion, getLatestClientVersion } = require('../services/versionManager');
 const { updateGameFiles } = require('./gameManager');
+const { syncModsForCurrentProfile } = require('./modManager');
 
 // Client patcher for custom auth server (sanasol.ws)
 let clientPatcher = null;
@@ -130,7 +131,7 @@ async function launchGame(playerName = 'Player', progressCallback, javaPathOverr
     }
   } else {
     javaBin = getJavaExec(customJreDir);
-    
+
     if (!getBundledJavaPath(customJreDir)) {
       const fallback = await detectSystemJava();
       if (fallback) {
@@ -192,9 +193,9 @@ async function launchGame(playerName = 'Player', progressCallback, javaPathOverr
       const serverDir = path.join(gameLatest, 'Server');
 
       const signPath = async (targetPath, deep = false) => {
-        await execAsync(`xattr -cr "${targetPath}"`).catch(() => {});
+        await execAsync(`xattr -cr "${targetPath}"`).catch(() => { });
         const deepFlag = deep ? '--deep ' : '';
-        await execAsync(`codesign --force ${deepFlag}--sign - "${targetPath}"`).catch(() => {});
+        await execAsync(`codesign --force ${deepFlag}--sign - "${targetPath}"`).catch(() => { });
       };
 
       if (fs.existsSync(appBundle)) {
@@ -216,8 +217,8 @@ async function launchGame(playerName = 'Player', progressCallback, javaPathOverr
       }
 
       if (fs.existsSync(serverDir)) {
-        await execAsync(`xattr -cr "${serverDir}"`).catch(() => {});
-        await execAsync(`find "${serverDir}" -type f -perm +111 -exec codesign --force --sign - {} \\;`).catch(() => {});
+        await execAsync(`xattr -cr "${serverDir}"`).catch(() => { });
+        await execAsync(`find "${serverDir}" -type f -perm +111 -exec codesign --force --sign - {} \\;`).catch(() => { });
         console.log('Signed server binaries (after patching)');
       }
 
@@ -260,11 +261,23 @@ exec "$REAL_JAVA" "\${ARGS[@]}"
   if (progressCallback) {
     progressCallback('Starting game...', null, null, null, null);
   }
+
+  // Ensure mods are synced for the active profile before launching
+  try {
+    console.log('Syncing mods for active profile before launch...');
+    if (progressCallback) progressCallback('Syncing mods...', null, null, null, null);
+    await syncModsForCurrentProfile();
+  } catch (syncError) {
+    console.error('Failed to sync mods before launch:', syncError);
+    // Continue anyway? Or fail? 
+    // Warn user but continue might be safer to avoid blocking play if sync is just glitchy
+  }
+
   console.log('Starting game...');
   console.log(`Command: "${clientPath}" ${args.join(' ')}`);
 
   const env = { ...process.env };
-  
+
   const waylandEnv = setupWaylandEnvironment();
   Object.assign(env, waylandEnv);
 
@@ -276,8 +289,8 @@ exec "$REAL_JAVA" "\${ARGS[@]}"
     };
 
     if (process.platform === 'win32') {
-      spawnOptions.shell = false; 
-      spawnOptions.windowsHide = true; 
+      spawnOptions.shell = false;
+      spawnOptions.windowsHide = true;
     }
 
     const child = spawn(clientPath, args, spawnOptions);
@@ -371,12 +384,12 @@ async function launchGameWithVersionCheck(playerName = 'Player', progressCallbac
       try {
         await updateGameFiles(latestVersion, progressCallback, customGameDir, customToolsDir, customCacheDir);
         console.log('Game updated successfully, waiting before launch...');
-        
+
         if (progressCallback) {
           progressCallback('Preparing game launch...', 90, null, null, null);
         }
-        await new Promise(resolve => setTimeout(resolve, 3000)); 
-        
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
       } catch (updateError) {
         console.error('Update failed:', updateError);
         if (progressCallback) {

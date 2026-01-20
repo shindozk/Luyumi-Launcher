@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hytale F2P Launcher</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body class="bg-black text-white overflow-hidden font-sans select-none" tabindex="-1">
     <div class="absolute inset-0 z-0">
         <img src="https://i.imgur.com/Visrk66.png" alt="Background" class="w-full h-full object-cover" />
         <div class="absolute inset-0 bg-black/60"></div>
-        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.1"/%3E%3C/svg%3E')] opacity-20"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=" 0 0 256 256"
+            xmlns="http://www.w3.org/2000/svg" %3E%3Cfilter id="noiseFilter" %3E%3CfeTurbulence type="fractalNoise"
+            baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /%3E%3C/filter%3E%3Crect width="100%25"
+            height="100%25" filter="url(%23noiseFilter)" opacity="0.1" /%3E%3C/svg%3E')] opacity-20"></div>
     </div>
 
     <div class="flex w-full h-screen relative z-10">
         <nav class="sidebar">
             <div class="sidebar-logo">
-                                    <img src="./icon.png" alt="Hytale Logo" />
+                <img src="./icon.png" alt="Hytale Logo" />
 
             </div>
 
@@ -50,7 +57,7 @@
                 </div>
             </div>
 
-           
+
         </nav>
 
         <main class="main-content">
@@ -59,6 +66,24 @@
                     <i class="fas fa-users"></i>
                     <span class="counter-label">Players:</span>
                     <span id="onlineCount" class="counter-value">0</span>
+                </div>
+
+                <div class="profile-selector" id="profileSelector">
+                    <button class="profile-btn" onclick="toggleProfileDropdown()">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="currentProfileName">Default</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-list" id="profileList">
+                            <!-- Profiles populated by JS -->
+                        </div>
+                        <div class="profile-divider"></div>
+                        <div class="profile-action" onclick="openProfileManager()">
+                            <i class="fas fa-cog"></i>
+                            <span>Manage Profiles</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="window-controls">
@@ -89,24 +114,26 @@
                             </h1>
                             <p class="install-subtitle">FREE TO PLAY LAUNCHER</p>
                         </div>
-                        
+
                         <div class="install-form">
                             <div class="form-group">
                                 <label class="form-label">Player Name</label>
-                                <input type="text" id="installPlayerName" placeholder="Enter your name" class="form-input" value="Player" />
+                                <input type="text" id="installPlayerName" placeholder="Enter your name"
+                                    class="form-input" value="Player" />
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="checkbox-group">
                                     <input type="checkbox" id="installCustomCheck" class="custom-checkbox">
                                     <span class="checkbox-label">Custom Installation</span>
                                 </label>
-                                
+
                                 <div id="installCustomOptions" class="custom-options">
                                     <div class="form-subgroup">
                                         <label class="form-label">Installation Folder</label>
                                         <div class="input-with-button">
-                                            <input type="text" id="installPath" placeholder="Default location" class="form-input" readonly />
+                                            <input type="text" id="installPath" placeholder="Default location"
+                                                class="form-input" readonly />
                                             <button onclick="browseInstallPath()" class="browse-btn">
                                                 <i class="fas fa-folder-open"></i>
                                             </button>
@@ -114,7 +141,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <button id="installBtn" class="install-button" onclick="installGame()">
                                 <i class="fas fa-download mr-2"></i>
                                 <span id="installText">INSTALL HYTALE</span>
@@ -134,7 +161,7 @@
                                     </h2>
                                     <p class="play-subtitle">Launch Hytale and enter the adventure</p>
                                 </div>
-                                
+
                                 <button id="homePlayBtn" class="home-play-button" onclick="launch()">
                                     <i class="fas fa-play"></i>
                                     <span>PLAY HYTALE</span>
@@ -216,21 +243,17 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="chat-body">
                                 <div id="chatMessages" class="chat-messages">
                                 </div>
                             </div>
-                            
+
                             <div class="chat-footer">
                                 <div class="chat-input-container">
-                                    <textarea 
-                                        id="chatInput" 
-                                        class="chat-input" 
-                                        placeholder="Type your message... (Links are automatically censored)"
-                                        rows="1"
-                                        maxlength="500"
-                                    ></textarea>
+                                    <textarea id="chatInput" class="chat-input"
+                                        placeholder="Type your message... (Links are automatically censored)" rows="1"
+                                        maxlength="500"></textarea>
                                     <button id="chatSendBtn" class="chat-send-btn">
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
@@ -254,36 +277,32 @@
                                     SETTINGS
                                 </h2>
                             </div>
-                            
+
                             <div class="settings-content">
                                 <div class="settings-section">
                                     <h3 class="settings-section-title">
                                         <i class="fas fa-coffee"></i>
                                         Java Runtime
                                     </h3>
-                                    
+
                                     <div class="settings-option">
                                         <label class="settings-checkbox">
                                             <input type="checkbox" id="customJavaCheck" />
                                             <span class="checkmark"></span>
                                             <div class="checkbox-content">
                                                 <div class="checkbox-title">Use Custom Java Path</div>
-                                                <div class="checkbox-description">Override the bundled Java runtime with your own installation</div>
+                                                <div class="checkbox-description">Override the bundled Java runtime with
+                                                    your own installation</div>
                                             </div>
                                         </label>
                                     </div>
-                                    
+
                                     <div id="customJavaOptions" class="custom-java-options" style="display: none;">
                                         <div class="settings-input-group">
                                             <label class="settings-input-label">Java Executable Path</label>
                                             <div class="settings-input-with-button">
-                                                <input 
-                                                    type="text" 
-                                                    id="customJavaPath" 
-                                                    class="settings-input" 
-                                                    placeholder="Select Java path..."
-                                                    readonly
-                                                />
+                                                <input type="text" id="customJavaPath" class="settings-input"
+                                                    placeholder="Select Java path..." readonly />
                                                 <button id="browseJavaBtn" class="settings-browse-btn">
                                                     <i class="fas fa-folder-open"></i>
                                                     Browse
@@ -302,14 +321,15 @@
                                         <i class="fab fa-discord"></i>
                                         Discord Integration
                                     </h3>
-                                    
+
                                     <div class="settings-option">
                                         <label class="settings-checkbox">
                                             <input type="checkbox" id="discordRPCCheck" checked />
                                             <span class="checkmark"></span>
                                             <div class="checkbox-content">
                                                 <div class="checkbox-title">Enable Discord Rich Presence</div>
-                                                <div class="checkbox-description">Show your launcher activity on Discord</div>
+                                                <div class="checkbox-description">Show your launcher activity on Discord
+                                                </div>
                                             </div>
                                         </label>
                                     </div>
@@ -320,27 +340,23 @@
                                         <i class="fas fa-gamepad"></i>
                                         Game Options
                                     </h3>
-                                    
+
                                     <div class="settings-option">
                                         <div class="settings-input-group">
                                             <label class="settings-input-label">Player Name</label>
-                                            <input 
-                                                type="text" 
-                                                id="settingsPlayerName" 
-                                                class="settings-input" 
-                                                placeholder="Enter your player name"
-                                                maxlength="16"
-                                            />
+                                            <input type="text" id="settingsPlayerName" class="settings-input"
+                                                placeholder="Enter your player name" maxlength="16" />
                                             <p class="settings-hint">
                                                 <i class="fas fa-user"></i>
                                                 This name will be used in-game (1-16 characters)
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="settings-option">
                                         <div class="settings-button-group">
-                                            <button id="openGameLocationBtn" class="settings-action-btn" onclick="openGameLocation()">
+                                            <button id="openGameLocationBtn" class="settings-action-btn"
+                                                onclick="openGameLocation()">
                                                 <i class="fas fa-folder-open"></i>
                                                 <div class="btn-content">
                                                     <div class="btn-title">Open Game Location</div>
@@ -356,22 +372,18 @@
                                         <i class="fas fa-fingerprint"></i>
                                         Player UUID Management
                                     </h3>
-                                    
+
                                     <div class="settings-option">
                                         <div class="settings-input-group">
                                             <label class="settings-input-label">Current UUID</label>
                                             <div class="uuid-display-container">
-                                                <input 
-                                                    type="text" 
-                                                    id="currentUuid" 
-                                                    class="settings-input uuid-input" 
-                                                    readonly
-                                                    placeholder="Loading UUID..."
-                                                />
+                                                <input type="text" id="currentUuid" class="settings-input uuid-input"
+                                                    readonly placeholder="Loading UUID..." />
                                                 <button id="copyUuidBtn" class="uuid-btn copy-btn" title="Copy UUID">
                                                     <i class="fas fa-copy"></i>
                                                 </button>
-                                                <button id="regenerateUuidBtn" class="uuid-btn regenerate-btn" title="Generate New UUID">
+                                                <button id="regenerateUuidBtn" class="uuid-btn regenerate-btn"
+                                                    title="Generate New UUID">
                                                     <i class="fas fa-sync-alt"></i>
                                                 </button>
                                             </div>
@@ -458,14 +470,8 @@
                 </p>
                 <div class="chat-username-input-group">
                     <label for="chatUsernameInput" class="chat-username-label">Username</label>
-                    <input 
-                        type="text" 
-                        id="chatUsernameInput" 
-                        class="chat-username-input" 
-                        placeholder="Enter your username..."
-                        maxlength="20"
-                        autocomplete="off"
-                    />
+                    <input type="text" id="chatUsernameInput" class="chat-username-input"
+                        placeholder="Enter your username..." maxlength="20" autocomplete="off" />
                     <span class="chat-username-hint">3-20 characters, letters, numbers, - and _ only</span>
                     <span id="chatUsernameError" class="chat-username-error"></span>
                 </div>
@@ -495,7 +501,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="uuid-modal-body">
                 <div class="uuid-current-section">
                     <h3 class="uuid-section-title">Current User UUID</h3>
@@ -504,7 +510,8 @@
                         <button id="modalCopyUuidBtn" class="uuid-action-btn copy-btn" title="Copy UUID">
                             <i class="fas fa-copy"></i>
                         </button>
-                        <button id="modalRegenerateUuidBtn" class="uuid-action-btn regenerate-btn" title="Generate New UUID">
+                        <button id="modalRegenerateUuidBtn" class="uuid-action-btn regenerate-btn"
+                            title="Generate New UUID">
                             <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
@@ -529,13 +536,9 @@
                 <div class="uuid-custom-section">
                     <h3 class="uuid-section-title">Set Custom UUID</h3>
                     <div class="uuid-custom-form">
-                        <input 
-                            type="text" 
-                            id="customUuidInput" 
-                            class="uuid-input" 
+                        <input type="text" id="customUuidInput" class="uuid-input"
                             placeholder="Enter custom UUID (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)"
-                            maxlength="36"
-                        />
+                            maxlength="36" />
                         <button id="setCustomUuidBtn" class="uuid-set-btn">
                             <i class="fas fa-check"></i>
                             Set UUID
@@ -550,27 +553,64 @@
         </div>
     </div>
 
+    <!-- Profile Manager Modal -->
+    <div id="profileManagerModal" class="profile-modal" style="display: none;">
+        <div class="profile-modal-content">
+            <div class="profile-modal-header">
+                <h2 class="profile-modal-title">
+                    <i class="fas fa-users-cog mr-2"></i>
+                    Manage Profiles
+                </h2>
+                <button class="modal-close-btn" onclick="closeProfileManager()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="profile-modal-body">
+                <div class="profile-manager-list" id="managerProfileList">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="profile-create-section">
+                    <input type="text" id="newProfileName" placeholder="New Profile Name" class="profile-input"
+                        maxlength="20">
+                    <button class="profile-create-btn" onclick="createNewProfile()">
+                        <i class="fas fa-plus"></i> Create Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm px-4 py-2">
         <div class="flex items-center justify-center text-xs text-gray-400">
-            <span>Made by <a href="https://github.com/amiayweb" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@amiayweb</a> & <a href="https://github.com/Relyz1993" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@Relyz</a></span>
+            <span>Made by <a href="https://github.com/amiayweb" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@amiayweb</a> & <a
+                    href="https://github.com/Relyz1993" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@Relyz</a></span>
             <span class="mx-2">|</span>
-            <span>Contributors: 
-                <a href="https://github.com/chasem-dev" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@chasem-dev</a>, 
-                <a href="https://github.com/crimera" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@crimera</a>, 
-                <a href="https://github.com/sanasol" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@sanasol</a>, 
-                <a href="https://github.com/Terromur" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@terromur</a>, 
-                <a href="https://github.com/ericiskoolbeans" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@ericiskoolbeans</a>, 
-                <a href="https://github.com/fazrigading" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">@fazrigading</a>
+            <span>Contributors:
+                <a href="https://github.com/chasem-dev" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@chasem-dev</a>,
+                <a href="https://github.com/crimera" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@crimera</a>,
+                <a href="https://github.com/sanasol" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@sanasol</a>,
+                <a href="https://github.com/Terromur" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@terromur</a>,
+                <a href="https://github.com/ericiskoolbeans" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@ericiskoolbeans</a>,
+                <a href="https://github.com/fazrigading" target="_blank"
+                    class="text-blue-400 hover:text-blue-300 transition-colors">@fazrigading</a>
             </span>
         </div>
     </footer>
 
-    <script type="module" src="js/script.js"></script>    <!-- Discord Notification -->
+    <script type="module" src="js/script.js"></script> <!-- Discord Notification -->
     <div id="discordNotification" class="discord-notification">
         <div class="notification-content">
             <i class="fab fa-discord"></i>
             <span class="notification-text">Join our Discord community!</span>
-            <button class="notification-action" onclick="window.electronAPI?.openExternal('https://discord.gg/n6HZ7NwSQd')">
+            <button class="notification-action"
+                onclick="window.electronAPI?.openExternal('https://discord.gg/n6HZ7NwSQd')">
                 Join Discord
             </button>
         </div>

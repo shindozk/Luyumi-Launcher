@@ -22,10 +22,10 @@ function setupModsEventListeners() {
     let searchTimeout;
     searchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value.toLowerCase().trim();
-      
+
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
-        modsPage = 0; 
+        modsPage = 0;
         loadBrowseMods();
       }, 500);
     });
@@ -52,7 +52,7 @@ function setupModsEventListeners() {
 
   const prevPageBtn = document.getElementById('prevPage');
   const nextPageBtn = document.getElementById('nextPage');
-  
+
   if (prevPageBtn) {
     prevPageBtn.addEventListener('click', () => {
       if (modsPage > 0) {
@@ -61,7 +61,7 @@ function setupModsEventListeners() {
       }
     });
   }
-  
+
   if (nextPageBtn) {
     nextPageBtn.addEventListener('click', () => {
       if (modsPage < modsTotalPages - 1) {
@@ -97,7 +97,7 @@ async function loadInstalledMods() {
 
     const mods = await window.electronAPI?.loadInstalledMods(modsPath);
     installedMods = mods || [];
-    
+
     displayInstalledMods(installedMods);
   } catch (error) {
     console.error('Error loading installed mods:', error);
@@ -196,13 +196,13 @@ async function loadBrowseMods() {
 
     const offset = modsPage * modsPageSize;
     let url = `${CURSEFORGE_API}/mods/search?gameId=${HYTALE_GAME_ID}&pageSize=${modsPageSize}&sortOrder=desc&sortField=6&index=${offset}`;
-    
+
     if (searchQuery && searchQuery.length > 0) {
       url += `&searchFilter=${encodeURIComponent(searchQuery)}`;
     }
-    
+
     console.log('Fetching mods from page', modsPage + 1, 'offset:', offset, 'search:', searchQuery || 'none', 'URL:', url);
-    
+
     const response = await fetch(url, {
       headers: {
         'x-api-key': API_KEY,
@@ -221,7 +221,7 @@ async function loadBrowseMods() {
     const data = await response.json();
     console.log('API Response data:', data);
     console.log('Total mods found:', data.data?.length || 0);
-    
+
     browseMods = (data.data || []).map(mod => ({
       id: mod.id.toString(),
       name: mod.name,
@@ -282,18 +282,25 @@ function displayBrowseMods(mods) {
 }
 
 function createBrowseModCard(mod) {
-  const isInstalled = installedMods.some(installed => 
-    installed.name.toLowerCase().includes(mod.name.toLowerCase()) ||
-    installed.curseForgeId == mod.id
-  );
+  const isInstalled = installedMods.some(installed => {
+    // Check by CurseForge ID (most reliable)
+    if (installed.curseForgeId && installed.curseForgeId.toString() === mod.id.toString()) {
+      return true;
+    }
+    // Check by exact name match for manually installed mods
+    if (installed.name.toLowerCase() === mod.name.toLowerCase()) {
+      return true;
+    }
+    return false;
+  });
 
   return `
     <div class=\"mod-card ${isInstalled ? 'installed' : ''}\" data-mod-id=\"${mod.id}\">
       <div class=\"mod-image\">
-        ${mod.thumbnailUrl ? 
-          `<img src=\"${mod.thumbnailUrl}\" alt=\"${mod.name}\" onerror=\"this.parentElement.innerHTML='<i class=\\\"fas fa-puzzle-piece\\\"></i>'\">` :
-          `<i class=\"fas fa-puzzle-piece\"></i>`
-        }
+        ${mod.thumbnailUrl ?
+      `<img src=\"${mod.thumbnailUrl}\" alt=\"${mod.name}\" onerror=\"this.parentElement.innerHTML='<i class=\\\"fas fa-puzzle-piece\\\"></i>'\">` :
+      `<i class=\"fas fa-puzzle-piece\"></i>`
+    }
       </div>
       
       <div class=\"mod-info\">
@@ -319,16 +326,16 @@ function createBrowseModCard(mod) {
           <i class=\"fas fa-external-link-alt\"></i>
           VIEW
         </button>
-        ${!isInstalled ? 
-          `<button id=\"install-${mod.id}\" class=\"mod-btn-toggle bg-primary text-black hover:bg-primary/80\">
+        ${!isInstalled ?
+      `<button id=\"install-${mod.id}\" class=\"mod-btn-toggle bg-primary text-black hover:bg-primary/80\">
             <i class=\"fas fa-download\"></i>
             INSTALL
           </button>` :
-          `<button class=\"mod-btn-toggle bg-white/10 text-white\" disabled>
+      `<button class=\"mod-btn-toggle bg-white/10 text-white\" disabled>
             <i class=\"fas fa-check\"></i>
             INSTALLED
           </button>`
-        }
+    }
       </div>
     </div>
   `;
@@ -337,9 +344,9 @@ function createBrowseModCard(mod) {
 async function downloadAndInstallMod(modInfo) {
   try {
     window.LauncherUI?.showProgress(`Downloading ${modInfo.name}...`);
-    
+
     const result = await window.electronAPI?.downloadMod(modInfo);
-    
+
     if (result?.success) {
       const newMod = {
         id: result.modInfo.id,
@@ -354,11 +361,11 @@ async function downloadAndInstallMod(modInfo) {
         curseForgeId: modInfo.modId,
         curseForgeFileId: modInfo.fileId
       };
-      
+
       installedMods.push(newMod);
-      
+
       await loadInstalledMods();
-      await loadBrowseMods(); 
+      await loadBrowseMods();
       window.LauncherUI?.hideProgress();
       showNotification(`${modInfo.name} installed successfully! 🎉`, 'success');
     } else {
@@ -374,10 +381,10 @@ async function downloadAndInstallMod(modInfo) {
 async function toggleMod(modId) {
   try {
     window.LauncherUI?.showProgress('Toggling mod...');
-    
+
     const modsPath = await window.electronAPI?.getModsPath();
     const result = await window.electronAPI?.toggleMod(modId, modsPath);
-    
+
     if (result?.success) {
       await loadInstalledMods();
       window.LauncherUI?.hideProgress();
@@ -400,13 +407,13 @@ async function deleteMod(modId) {
     async () => {
       try {
         window.LauncherUI?.showProgress('Deleting mod...');
-        
+
         const modsPath = await window.electronAPI?.getModsPath();
         const result = await window.electronAPI?.uninstallMod(modId, modsPath);
-        
+
         if (result?.success) {
           await loadInstalledMods();
-          await loadBrowseMods(); 
+          await loadBrowseMods();
           window.LauncherUI?.hideProgress();
           showNotification(`"${mod.name}" deleted successfully`, 'success');
         } else {
@@ -436,21 +443,21 @@ function showNotification(message, type = 'info', duration = 4000) {
 
   const notification = document.createElement('div');
   notification.className = `mod-notification ${type}`;
-  
+
   const icons = {
     success: 'fa-check-circle',
     error: 'fa-exclamation-circle',
     info: 'fa-info-circle',
     warning: 'fa-exclamation-triangle'
   };
-  
+
   const colors = {
     success: '#10b981',
-    error: '#ef4444', 
+    error: '#ef4444',
     info: '#3b82f6',
     warning: '#f59e0b'
   };
-  
+
   notification.innerHTML = `
     <div class="notification-content">
       <i class="fas ${icons[type]}"></i>
@@ -460,7 +467,7 @@ function showNotification(message, type = 'info', duration = 4000) {
       <i class="fas fa-times"></i>
     </button>
   `;
-  
+
   notification.style.cssText = `
     position: fixed;
     top: 20px;
@@ -481,14 +488,14 @@ function showNotification(message, type = 'info', duration = 4000) {
     font-size: 14px;
     font-weight: 500;
   `;
-  
+
   const contentStyle = `
     display: flex;
     align-items: center;
     gap: 10px;
     flex: 1;
   `;
-  
+
   const closeStyle = `
     background: none;
     border: none;
@@ -500,17 +507,17 @@ function showNotification(message, type = 'info', duration = 4000) {
     transition: opacity 0.2s;
     margin-left: 10px;
   `;
-  
+
   notification.querySelector('.notification-content').style.cssText = contentStyle;
   notification.querySelector('.notification-close').style.cssText = closeStyle;
-  
+
   document.body.appendChild(notification);
-  
+
   // Animate in
   setTimeout(() => {
     notification.style.transform = 'translateX(0)';
   }, 10);
-  
+
   // Auto remove
   setTimeout(() => {
     if (notification.parentElement) {
@@ -651,13 +658,13 @@ function updatePagination() {
 
   if (currentPageEl) currentPageEl.textContent = modsPage + 1;
   if (totalPagesEl) totalPagesEl.textContent = modsTotalPages;
-  
+
   if (prevBtn) {
     prevBtn.disabled = modsPage === 0;
     prevBtn.style.opacity = modsPage === 0 ? '0.5' : '1';
     prevBtn.style.cursor = modsPage === 0 ? 'not-allowed' : 'pointer';
   }
-  
+
   if (nextBtn) {
     nextBtn.disabled = modsPage >= modsTotalPages - 1;
     nextBtn.style.opacity = modsPage >= modsTotalPages - 1 ? '0.5' : '1';
@@ -681,7 +688,7 @@ function showInstalledModsError(message) {
 function viewModPage(modId) {
   console.log('Looking for mod with ID:', modId, 'Type:', typeof modId);
   console.log('Available mods:', browseMods.map(m => ({ id: m.id, name: m.name, type: typeof m.id })));
-  
+
   const mod = browseMods.find(m => m.id.toString() === modId.toString());
   if (mod) {
     console.log('Found mod:', mod.name);
@@ -694,9 +701,9 @@ function viewModPage(modId) {
       const nameSlug = mod.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       modUrl = `https://www.curseforge.com/hytale/mods/${nameSlug}`;
     }
-    
+
     console.log('Opening URL:', modUrl);
-    
+
     if (window.electronAPI && window.electronAPI.openExternalLink) {
       window.electronAPI.openExternalLink(modUrl);
     } else {
@@ -717,7 +724,9 @@ window.modsManager = {
   deleteMod,
   openMyModsModal,
   closeMyModsModal,
-  viewModPage
+  viewModPage,
+  loadInstalledMods,
+  loadBrowseMods
 };
 
 document.addEventListener('DOMContentLoaded', initModsManager);
