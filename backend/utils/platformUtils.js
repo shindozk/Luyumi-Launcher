@@ -66,59 +66,136 @@ function setupWaylandEnvironment() {
 }
 
 function detectGpu() {
-  if (process.platform !== 'linux') {
-    return { mode: 'integrated', vendor: 'intel', integratedName: 'Unknown', dedicatedName: null };
-  }
+  const platform = getOS();
 
   try {
-    const output = execSync('lspci -nn | grep \'VGA\\|3D\'', { encoding: 'utf8' });
-    // console.log('GPU detection raw output:', output);
-    const lines = output.split('\n').filter(line => line.trim());
-    // console.log('GPU detection parsed lines:', lines);
-
-    let integratedName = null;
-    let dedicatedName = null;
-    let hasNvidia = false;
-    let hasAmd = false;
-
-    for (const line of lines) {
-      // console.log('Checking line:', line);
-      if (line.includes('VGA') || line.includes('3D')) {
-        // console.log('Line contains VGA or 3D');
-
-        const match = line.match(/\[([^\]]+)\]/g);
-        let modelName = null;
-        if (match && match.length >= 2) {
-          modelName = match[1].slice(1, -1);
-        }
-
-        if (line.includes('10de:') || line.toLowerCase().includes('nvidia')) {
-          hasNvidia = true;
-          dedicatedName = "NVIDIA " + modelName || 'NVIDIA GPU';
-          console.log('Detected NVIDIA GPU:', dedicatedName);
-        } else if (line.includes('1002:') || line.toLowerCase().includes('amd') || line.toLowerCase().includes('radeon')) {
-          hasAmd = true;
-          dedicatedName = "AMD " + modelName || 'AMD GPU';
-          console.log('Detected AMD GPU:', dedicatedName);
-        } else if (line.includes('8086:') || line.toLowerCase().includes('intel')) {
-          integratedName = "Intel " + modelName || 'Intel GPU';
-          console.log('Detected Intel GPU:', integratedName);
-        }
-      }
-    }
-
-    // console.log('hasNvidia:', hasNvidia, 'hasAmd:', hasAmd, 'integratedName:', integratedName, 'dedicatedName:', dedicatedName);
-
-    if (hasNvidia) {
-      return { mode: 'dedicated', vendor: 'nvidia', integratedName: integratedName || 'Intel GPU', dedicatedName };
-    } else if (hasAmd) {
-      return { mode: 'dedicated', vendor: 'amd', integratedName: integratedName || 'Intel GPU', dedicatedName };
+    if (platform === 'linux') {
+      return detectGpuLinux();
+    } else if (platform === 'windows') {
+      return detectGpuWindows();
+    } else if (platform === 'darwin') {
+      return detectGpuMac();
     } else {
-      return { mode: 'integrated', vendor: 'intel', integratedName: integratedName || 'Intel GPU', dedicatedName: null };
+      return { mode: 'integrated', vendor: 'intel', integratedName: 'Unknown', dedicatedName: null };
     }
   } catch (error) {
     console.warn('GPU detection failed, falling back to integrated:', error.message);
     return { mode: 'integrated', vendor: 'intel', integratedName: 'Unknown', dedicatedName: null };
+  }
+}
+
+function detectGpuLinux() {
+  const output = execSync('lspci -nn | grep \'VGA\\|3D\'', { encoding: 'utf8' });
+  const lines = output.split('\n').filter(line => line.trim());
+
+  let integratedName = null;
+  let dedicatedName = null;
+  let hasNvidia = false;
+  let hasAmd = false;
+
+  for (const line of lines) {
+    if (line.includes('VGA') || line.includes('3D')) {
+      const match = line.match(/\[([^\]]+)\]/g);
+      let modelName = null;
+      if (match && match.length >= 2) {
+        modelName = match[1].slice(1, -1);
+      }
+
+      if (line.includes('10de:') || line.toLowerCase().includes('nvidia')) {
+        hasNvidia = true;
+        dedicatedName = "NVIDIA " + modelName || 'NVIDIA GPU';
+        console.log('Detected NVIDIA GPU:', dedicatedName);
+      } else if (line.includes('1002:') || line.toLowerCase().includes('amd') || line.toLowerCase().includes('radeon')) {
+        hasAmd = true;
+        dedicatedName = "AMD " + modelName || 'AMD GPU';
+        console.log('Detected AMD GPU:', dedicatedName);
+      } else if (line.includes('8086:') || line.toLowerCase().includes('intel')) {
+        integratedName = "Intel " + modelName || 'Intel GPU';
+        console.log('Detected Intel GPU:', integratedName);
+      }
+    }
+  }
+
+  if (hasNvidia) {
+    return { mode: 'dedicated', vendor: 'nvidia', integratedName: integratedName || 'Intel GPU', dedicatedName };
+  } else if (hasAmd) {
+    return { mode: 'dedicated', vendor: 'amd', integratedName: integratedName || 'Intel GPU', dedicatedName };
+  } else {
+    return { mode: 'integrated', vendor: 'intel', integratedName: integratedName || 'Intel GPU', dedicatedName: null };
+  }
+}
+
+function detectGpuWindows() {
+  const output = execSync('wmic path win32_VideoController get name', { encoding: 'utf8' });
+  const lines = output.split('\n').map(line => line.trim()).filter(line => line && line !== 'Name');
+
+  let integratedName = null;
+  let dedicatedName = null;
+  let hasNvidia = false;
+  let hasAmd = false;
+
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    if (lowerLine.includes('nvidia')) {
+      hasNvidia = true;
+      dedicatedName = line;
+      console.log('Detected NVIDIA GPU:', dedicatedName);
+    } else if (lowerLine.includes('amd') || lowerLine.includes('radeon')) {
+      hasAmd = true;
+      dedicatedName = line;
+      console.log('Detected AMD GPU:', dedicatedName);
+    } else if (lowerLine.includes('intel')) {
+      integratedName = line;
+      console.log('Detected Intel GPU:', integratedName);
+    }
+  }
+
+  if (hasNvidia) {
+    return { mode: 'dedicated', vendor: 'nvidia', integratedName: integratedName || 'Intel GPU', dedicatedName };
+  } else if (hasAmd) {
+    return { mode: 'dedicated', vendor: 'amd', integratedName: integratedName || 'Intel GPU', dedicatedName };
+  } else {
+    return { mode: 'integrated', vendor: 'intel', integratedName: integratedName || 'Intel GPU', dedicatedName: null };
+  }
+}
+
+function detectGpuMac() {
+  const output = execSync('system_profiler SPDisplaysDataType', { encoding: 'utf8' });
+  const lines = output.split('\n');
+
+  let integratedName = null;
+  let dedicatedName = null;
+  let hasNvidia = false;
+  let hasAmd = false;
+
+  for (const line of lines) {
+    if (line.includes('Chipset Model:')) {
+      const gpuName = line.split('Chipset Model:')[1].trim();
+      const lowerGpu = gpuName.toLowerCase();
+      if (lowerGpu.includes('nvidia')) {
+        hasNvidia = true;
+        dedicatedName = gpuName;
+        console.log('Detected NVIDIA GPU:', dedicatedName);
+      } else if (lowerGpu.includes('amd') || lowerGpu.includes('radeon')) {
+        hasAmd = true;
+        dedicatedName = gpuName;
+        console.log('Detected AMD GPU:', dedicatedName);
+      } else if (lowerGpu.includes('intel') || lowerGpu.includes('iris') || lowerGpu.includes('uhd')) {
+        integratedName = gpuName;
+        console.log('Detected Intel GPU:', integratedName);
+      } else if (!dedicatedName && !integratedName) {
+        // Fallback for Apple Silicon or other
+        integratedName = gpuName;
+      }
+    }
+  }
+
+  if (hasNvidia) {
+    return { mode: 'dedicated', vendor: 'nvidia', integratedName: integratedName || 'Integrated GPU', dedicatedName };
+  } else if (hasAmd) {
+    return { mode: 'dedicated', vendor: 'amd', integratedName: integratedName || 'Integrated GPU', dedicatedName };
+  } else {
+    return { mode: 'integrated', vendor: 'intel', integratedName: integratedName || 'Integrated GPU', dedicatedName: null };
   }
 }
 

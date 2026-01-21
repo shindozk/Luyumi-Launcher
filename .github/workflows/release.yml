@@ -13,12 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # FIX Install bsdtar for Pacman builds
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools
+          
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
       - run: npm ci
-      
+
       - name: Build Linux Packages
         run: |
           npx electron-builder --linux --x64 --arm64 --publish never
@@ -79,6 +85,10 @@ jobs:
       contents: write
 
     steps:
+      # FIX: './package.json' Module Not Found in `Get version` step
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -97,7 +107,7 @@ jobs:
           # If it's a tag, use the tag. 
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}.r{1}', steps.pkg_version.outputs.VERSION, github.run_number) }}
           # If it's the 'release' branch, use 'v2.0.2-beta.r42'
-          name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}-beta.r{1})', steps.pkg_version.outputs.VERSION, github.run_number) }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}-beta.r{1}', steps.pkg_version.outputs.VERSION, github.run_number) }}
           files: |
             artifacts/linux-builds/**/*
             artifacts/windows-builds/**/*

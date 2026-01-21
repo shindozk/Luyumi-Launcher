@@ -1,5 +1,5 @@
 {
-  "name": "hytale-f2p-launcherv2",
+  "name": "hytale-f2p-launcher",
   "version": "2.0.2b",
   "description": "A modern, cross-platform launcher for Hytale with automatic updates and multi-client support",
   "homepage": "https://github.com/amiayweb/Hytale-F2P",
@@ -57,7 +57,7 @@
   "build": {
     "appId": "com.hytalef2p.launcher",
     "productName": "Hytale F2P Launcher",
-    "executableName": "hytale-f2p-launcherv2",
+    "artifactName": "${name}_${version}_${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
