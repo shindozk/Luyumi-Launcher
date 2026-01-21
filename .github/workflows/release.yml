@@ -107,7 +107,7 @@ jobs:
           # If it's a tag, use the tag. 
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}.r{1}', steps.pkg_version.outputs.VERSION, github.run_number) }}
           # If it's the 'release' branch, use 'v2.0.2-beta.r42'
-          name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}-beta.r{1})', steps.pkg_version.outputs.VERSION, github.run_number) }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}-beta.r{1}', steps.pkg_version.outputs.VERSION, github.run_number) }}
           files: |
             artifacts/linux-builds/**/*
             artifacts/windows-builds/**/*
