@@ -35,6 +35,7 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 <h2 align="center">✨ Features</h2>
 
 <h3 align="center">Core Features</h3>
+
 - **🚀 Auto-Build Backend**: Revolutionary system that automatically compiles the backend from TypeScript source on every launch
 - **🔧 Self-Healing**: Auto-installs Bun.js if missing, ensuring zero manual setup
 - **📺 Beautiful Init Screen**: Animated loading screen with logo entrance, text slide-in, and progress tracking
@@ -45,6 +46,7 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 - **🖥️ Cross-Platform**: Native support for **Windows**, **Linux**, and **macOS**
 
 <h3 align="center">Game Management</h3>
+
 - **🛠️ Smart Patching**: Automatic binary patching for game clients to ensure compatibility
 - **📦 Delta Updates**: Efficient differential patching system - only download changed files
 - **🔖 Version Control**: Tracks installed game versions via metadata (`luyumi_metadata.json`) for accurate updates
@@ -54,12 +56,14 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 - **🎮 Game Process Control**: Launch, monitor, and gracefully stop game processes
 
 <h3 align="center">Mod System</h3>
+
 - **📦 Mod Management**: Full-featured mod manager with enable/disable functionality
 - **🔄 Mod Sync**: Synchronize mods across different profiles
 - **📋 Profile System**: Create and manage multiple game profiles with isolated mod configurations
 - **📄 Butler Integration**: Native support for Butler protocol mods
 
 <h3 align="center">UI/UX Excellence</h3>
+
 - **🌍 Multi-Language**: 8 languages supported (EN, PT, ES, ZH, JA, KO, RU, FR)
 - **🌙 Dark Mode**: Beautiful dark theme with acrylic effects
 - **✨ Smooth Animations**: Micro-animations throughout the interface
@@ -71,6 +75,7 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 Luyumi Launcher uses an innovative **Auto-Build Client-Server** model:
 
 <h3 align="center">Frontend (Flutter/Dart)</h3>
+
 ```
 lib/
 ├── ui/
@@ -103,6 +108,7 @@ lib/
 ```
 
 <h3 align="center">Backend (TypeScript/Bun)</h3>
+
 ```
 lib/backend/
 ├── src/
@@ -134,6 +140,7 @@ lib/backend/
 ```
 
 <h3 align="center">Communication Flow</h3>
+
 1. **Init Screen Phase**:
    - Check Bun.js installation → Auto-install if missing
    - Delete old backend executable
@@ -149,6 +156,7 @@ lib/backend/
 <h2 align="center">🚀 Installation & Building</h2>
 
 <h3 align="center">Prerequisites</h3>
+
 - **Flutter SDK 3.10+**: [Install Flutter](https://flutter.dev/docs/get-started/install)
 - **Bun.js** (auto-installed by launcher): [Bun Official Site](https://bun.sh)
 - **Git**: [Install Git](https://git-scm.com/)
@@ -257,7 +265,7 @@ Unlike Minecraft (pure Java), Hytale uses Java + C#. We're leveraging **FEX-Emu*
 💬 Discord: `shindozk`  
 🇧🇷 **Made in Brazil**
 
-### Special Thanks
+<h3 align="center">Special Thanks</h3>
 
 - **[Hytale F2P](https://github.com/amiayweb/Hytale-F2P)** by **Amiayweb**: Original game launching logic and patching methods
 - **Sanasol.ws**: Authentication infrastructure and game session services
@@ -265,11 +273,11 @@ Unlike Minecraft (pure Java), Hytale uses Java + C#. We're leveraging **FEX-Emu*
 - **The Bun Team**: Lightning-fast JavaScript runtime and bundler
 - **Elysia.js**: Elegant TypeScript HTTP framework
 
-## 📄 License
+<h2 align="center">📄 License</h2>
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🌟 Star History
+<h2 align="center">🌟 Star History</h2>
 
 If you find this project useful, please consider giving it a star! ⭐
 
