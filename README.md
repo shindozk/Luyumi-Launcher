@@ -5,13 +5,13 @@
 <img src="https://i.imgur.com/WCmjbkx.png" width="150" alt="Luyumi Logo">
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 **A next-generation, cross-platform custom launcher for Hytale.**  
-*Built with Flutter and TypeScript, featuring auto-build backend system.*
+*Built with Flutter and a Python FastAPI backend, featuring automated backend setup.*
 
 [Features](#-features) • [Installation](#-installation) • [Architecture](#-architecture) • [Credits](#-credits)
 
@@ -21,9 +21,9 @@
 
 <h2 align="center">📖 About</h2>
 
-**Luyumi Launcher** is a modern, open-source launcher designed to provide a seamless and customizable experience for Hytale players. Based on the **Hytale F2P** project, Luyumi features a revolutionary **auto-build backend system** that compiles TypeScript source code on every launch, ensuring you always have the latest features and fixes.
+**Luyumi Launcher** is a modern, open-source launcher designed to provide a seamless and customizable experience for Hytale players. Based on the **Hytale F2P** project and integrated with the **Butter Launcher** ecosystem, Luyumi features an automated **Python backend setup** that installs dependencies and starts a FastAPI server on launch.
 
-It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.ws** services, providing enhanced authentication features and offline capabilities.
+It integrates directly with **Sanasol.ws** and **Butter Launcher** services, providing enhanced authentication, official version tracking, and robust offline capabilities.
 
 <h2 align="center">🖼️ Screenshots</h2>
 
@@ -32,18 +32,27 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 ![Screenshots 3](https://iili.io/f6jXhn1.png)
 ![Screenshots 4](https://iili.io/f6jh0iX.png)
 
+<h2 align="center">📱 Mobile Version (In Development)</h2>
+
+> **Announcement**: An Android version is under active development!
+
+Unlike Minecraft (pure Java), Hytale uses Java + C#. We're leveraging **FEX-Emu** (x86 to ARM emulator) to run the Linux x86 version on Android devices.
+
+![Screenshot Mobile](https://iili.io/f6jreLJ.png)
+
 <h2 align="center">✨ Features</h2>
 
 <h3 align="center">Core Features</h3>
 
-- **🚀 Auto-Build Backend**: Revolutionary system that automatically compiles the backend from TypeScript source on every launch
-- **🔧 Self-Healing**: Auto-installs Bun.js if missing, ensuring zero manual setup
+- **🚀 Auto-Setup Backend**: Automatically installs backend dependencies and starts the Python server on launch
+- **🔧 Self-Healing**: Auto-installs Python if missing, ensuring zero manual setup
 - **📺 Beautiful Init Screen**: Animated loading screen with logo entrance, text slide-in, and progress tracking
 - **🎨 Modern UI**: Sleek, acrylic-styled interface with glassmorphism effects and smooth animations
 - **🔐 Custom Authentication**: Secure integration with `sessions.sanasol.ws` for identity management
 - **👕 Unlocked Skins**: Full access to all skins and character customization when using Online Mode
 - **📡 Offline Mode**: Robust fallback system with local token generation
 - **🖥️ Cross-Platform**: Native support for **Windows**, **Linux**, and **macOS**
+- **📦 Advanced Installer**: Simplified setup with automatic shortcut creation for Windows and **Linux** (.desktop)
 
 <h3 align="center">Game Management</h3>
 
@@ -60,6 +69,7 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 - **📦 Mod Management**: Full-featured mod manager with enable/disable functionality
 - **🔄 Mod Sync**: Synchronize mods across different profiles
 - **📋 Profile System**: Create and manage multiple game profiles with isolated mod configurations
+- **🔍 Mod Explorer**: Direct search and exploration of CurseForge mods (Refactoring in progress)
 - **📄 Butler Integration**: Native support for Butler protocol mods
 
 <h3 align="center">UI/UX Excellence</h3>
@@ -68,7 +78,7 @@ It extends the **Hytale F2P** ecosystem and integrates directly with **Sanasol.w
 - **🌙 Dark Mode**: Beautiful dark theme with acrylic effects
 - **✨ Smooth Animations**: Micro-animations throughout the interface
 - **📊 Progress Bar**: Modern animated progress indicators with completion effects
-- **🎯 Version Display**: Dynamic version tracking for both launcher and game with update notifications
+- **🎯 Dynamic Versioning**: Synchronizes with official release channels (`${date}_build_release-${id}`)
 
 <h2 align="center">🏗️ Architecture</h2>
 
@@ -103,49 +113,46 @@ lib/
 │       └── game_status.dart        # Game state models
 └── assets/
     ├── logo/                   # Launcher branding
-    ├── locales/                # i18n translations
-    └── backend/                # Compiled backend executable
+    └── locales/                # i18n translations
 ```
 
-<h3 align="center">Backend (TypeScript/Bun)</h3>
+<h3 align="center">Backend (Python/FastAPI)</h3>
 
 ```
 lib/backend/
-├── src/
-│   ├── index.ts               # Elysia server entry point
-│   ├── routes/
-│   │   ├── auth.ts            # Authentication endpoints
-│   │   ├── version.ts         # Version checking
-│   │   ├── game.ts            # Game management
-│   │   ├── mods.ts            # Mod operations
-│   │   ├── java.ts            # Java management
-│   │   └── news.ts            # News feed
-│   ├── services/
-│   │   ├── AuthService.ts         # EdDSA token signing
-│   │   ├── GameService.ts         # Game download & install
-│   │   ├── InstallationDetectionService.ts # Game integrity & status check
-│   │   ├── PatcherService.ts      # Binary hex patching
-│   │   ├── ModManager.ts          # Mod scanning & loading
-│   │   ├── ModService.ts          # Mod installation
-│   │   ├── JavaService.ts         # Java detection & install
-│   │   ├── VersionService.ts      # Version management
-│   │   ├── ProfileService.ts      # Profile isolation
-│   │   ├── ButlerService.ts       # Butler protocol
-│   │   └── UIService.ts           # Frontend communication
-│   └── utils/
-│       ├── paths.ts               # Path resolution
-│       ├── platform.ts            # Platform detection
-│       └── async.ts               # Async helpers
-└── package.json               # Bun dependencies
+├── main.py                   # FastAPI server entry point
+├── requirements.txt          # Python dependencies
+└── src/
+    ├── routes/
+    │   ├── auth.py            # Authentication endpoints
+    │   ├── version.py         # Version checking
+    │   ├── game.py            # Game management
+    │   ├── mods.py            # Mod operations
+    │   ├── java.py            # Java management
+    │   └── news.py            # News feed
+    ├── services/
+    │   ├── AuthService.py         # EdDSA token signing
+    │   ├── GameService.py         # Game download & install
+    │   ├── InstallationDetectionService.py # Game integrity & status check
+    │   ├── CurseForgeService.py   # Direct CurseForge API integration
+    │   ├── ModManager.py          # Mod scanning & loading
+    │   ├── ModService.py          # Mod installation logic
+    │   ├── JavaService.py         # Java detection & install
+    │   ├── VersionService.py      # Version management (Butter API)
+    │   ├── ProfileService.py      # Profile isolation
+    │   ├── ButlerService.py       # Butler protocol
+    │   └── UIService.py           # Frontend communication
+    └── utils/
+        ├── paths.py               # Path resolution
+        └── platform.py            # Platform detection
 ```
 
 <h3 align="center">Communication Flow</h3>
 
 1. **Init Screen Phase**:
-   - Check Bun.js installation → Auto-install if missing
-   - Delete old backend executable
-   - Compile backend from TypeScript source using `bun build --compile`
-   - Start compiled backend server (Elysia on port 8080)
+   - Check Python installation → Auto-install if missing
+   - Install backend dependencies with `pip install -r requirements.txt`
+   - Start backend server with `python main.py` (FastAPI on port 8080)
    - Verify backend health check
 
 2. **Runtime Communication**:
@@ -158,10 +165,10 @@ lib/backend/
 <h3 align="center">Prerequisites</h3>
 
 - **Flutter SDK 3.10+**: [Install Flutter](https://flutter.dev/docs/get-started/install)
-- **Bun.js** (auto-installed by launcher): [Bun Official Site](https://bun.sh)
+- **Python 3.11+** (auto-installed by launcher on Windows)
 - **Git**: [Install Git](https://git-scm.com/)
 
-> **Note**: The launcher will automatically install Bun.js if it's not present on your system!
+> **Note**: The launcher will automatically install Python (Windows) and update backend dependencies if needed.
 
 <h3 align="center">Quick Start</h3>
 
@@ -187,8 +194,8 @@ lib/backend/
 
    On first run, the launcher will:
    - Display animated init screen
-   - Auto-install Bun.js if needed
-   - Compile the backend from source
+   - Auto-install Python if needed
+   - Install backend Python dependencies
    - Start the backend server
    - Navigate to the main screen
 
@@ -211,18 +218,18 @@ The compiled app will be in `build/{platform}/runner/Release/`
 
 <h3 align="center">Backend Development</h3>
 
-The backend is automatically rebuilt on every launcher start, so you can modify TypeScript files and see changes immediately:
+The backend is automatically started on launcher launch, so you can modify Python files and see changes immediately:
 
 ```bash
 # Backend source location
 cd lib/backend
 
 # Install dependencies (if adding new packages)
-bun install
+pip install -r requirements.txt
 
-# The launcher will compile and run it automatically
+# The launcher will start it automatically
 # Or test manually:
-bun run src/index.ts
+python main.py
 ```
 
 <h3 align="center">Frontend Development</h3>
@@ -242,7 +249,7 @@ flutter analyze
 
 1. Create route file in `lib/backend/src/routes/`
 2. Create service file in `lib/backend/src/services/`  
-3. Register route in `lib/backend/src/index.ts`
+3. Register route in `lib/backend/main.py`
 4. Update frontend `BackendService` to call new endpoint
 
 <h3 align="center">Adding New Languages</h3>
@@ -251,27 +258,24 @@ flutter analyze
 2. Create JSON file in `lib/assets/locales/{locale}.json`
 3. Add translations using same keys as `en.json`
 
-<h2 align="center">📱 Mobile Version (In Development)</h2>
-
-> **Announcement**: An Android version is under active development!
-
-Unlike Minecraft (pure Java), Hytale uses Java + C#. We're leveraging **FEX-Emu** (x86 to ARM emulator) to run the Linux x86 version on Android devices.
-
-![Screenshot Mobile](https://iili.io/f6jreLJ.png)
-
 <h2 align="center">🤝 Credits & Acknowledgements</h2>
+
+<div align="center">
 
 **Luyumi Launcher developed by [ShindoZk](https://github.com/ShindoZk)**  
 💬 Discord: `shindozk`  
 🇧🇷 **Made in Brazil**
 
+</div>
+
 <h3 align="center">Special Thanks</h3>
 
 - **[Hytale F2P](https://github.com/amiayweb/Hytale-F2P)** by **Amiayweb**: Original game launching logic and patching methods
+- **[Butter Launcher](https://github.com/vZylev/Butter-Launcher)** by **vZylev**: Official version tracking and release management infrastructure
 - **Sanasol.ws**: Authentication infrastructure and game session services
 - **The Flutter Team**: Amazing UI toolkit
-- **The Bun Team**: Lightning-fast JavaScript runtime and bundler
-- **Elysia.js**: Elegant TypeScript HTTP framework
+- **FastAPI**: Modern Python web framework
+- **Uvicorn**: Fast ASGI server
 
 <h2 align="center">📄 License</h2>
 

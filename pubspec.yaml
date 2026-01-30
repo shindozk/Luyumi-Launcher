@@ -54,6 +54,12 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   easy_localization: ^3.0.7
+  package_info_plus: ^9.0.0
+  # MongoDB moved to backend (DatabaseService -> UserService)
+  # mongo_dart: ^0.10.6  # REMOVED - now using backend APIs
+  flutter_dotenv: ^6.0.0
+  slider_captcha: ^1.0.2
+  audioplayers: ^6.5.1
 
 dev_dependencies:
   flutter_test:
@@ -106,8 +112,16 @@ flutter:
   assets:
     - lib/assets/locales/
     - lib/assets/logo/
-    - lib/assets/backend/
+    - lib/assets/images/
     - lib/backend/
+    - lib/backend/src/
+    - lib/backend/src/routes/
+    - lib/backend/src/services/
+    - lib/backend/src/utils/
+    - lib/config/settings.json
+    - lib/assets/sounds/
+    # - .env  <-- Removed to prevent exposing secrets in release builds
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
