@@ -27,10 +27,10 @@ It integrates directly with **Sanasol.ws** and **Butter Launcher** services, pro
 
 <h2 align="center">🖼️ Screenshots</h2>
 
-![Screenshots 1](https://iili.io/f6jMo3x.png)
-![Screenshots 2](https://iili.io/f6jVDgf.png)
-![Screenshots 3](https://iili.io/f6jXhn1.png)
-![Screenshots 4](https://iili.io/f6jh0iX.png)
+![Screenshots 1](https://iili.io/fLzajMx.png)
+![Screenshots 2](https://iili.io/fLz0jMG.png)
+![Screenshots 3](https://iili.io/fLzEBdQ.png)
+![Screenshots 4](https://iili.io/fLzG93v.png)
 
 <h2 align="center">📱 Mobile Version (In Development)</h2>
 
