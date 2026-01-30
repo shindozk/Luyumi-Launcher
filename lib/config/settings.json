@@ -1,0 +1,18 @@
+{
+    "launcher_version": "1.0.0",
+    "api_keys": {
+        "curseforge": "06fee2d9-4906-4e7c-9690-4ec91864e986"
+    },
+    "app_settings": {
+        "default_language": "en_US",
+        "update_channel": "stable",
+        "check_updates_on_startup": true,
+        "theme_mode": "system"
+    },
+    "game_settings_defaults": {
+        "java_memory_min": 2048,
+        "java_memory_max": 4096,
+        "resolution_width": 1280,
+        "resolution_height": 720
+    }
+}
